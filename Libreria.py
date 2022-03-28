@@ -72,12 +72,15 @@ def InvaddMatrix(c1):
     return vec
 
 #Multiplicación de un escalar por una matriz compleja.
-def EscMatrix(x,c1):
-    vec = [[] for i in range(len(c1))]
-    for i in range(len(c1)):
-        vec[i] = EscxVecComplex(x,c1[i])
-    return vec
-
+def MultEscalarMatriz(c, A):
+    fila = [(0, 0)] * len(A[0])
+    r = [fila] * len(A)
+    for j in range(len(A)):
+        fila = [(0, 0)] * len(A[0])
+        r[j] = fila
+        for k in range(len(A[0])):
+            r[j][k] =ProduComplex(c, A[j][k])
+    return r
 # Transpuesta de una matriz/vector
 def Trans_Matrix(c1):
     vec = [[(0,0) for h in range(len(c1[0]))] for i in range(len(c1))]
@@ -107,21 +110,21 @@ def sum_arr(c1):
 
 # Producto entre matrices
 def Produc_Matrix(c1,c2):
-    fila = len(c1)
-    columna = len(c2[0])
-    matriz = [[(0,0) for h in range(columna)] for i in range(fila)]
-    if fila == columna:
-        for i in range(len(c1[0])):
-            elemnt = []
-            for j in range(len(c2)):
-                elemnt += Produc_Matrix((c1[i][j]),(c2[i][j])) 
-            matriz[i][j] = sum_arr(elemnt) 
-    else:
-        print("Las longitudes de las matrizes con diferentes")
-    return matriz
+    c = []
+    for i in range(len(c1)):
+        c.append([])
+        for j in range(len(c2[0])):
+            c[i].append((0,0))
+            for k in range(len(c1[0])):
+                c[i][j] = SumComplex(c[i][j],ProduComplex(c1[i][k],c2[k][j]))
+    return c
+
 #Accion de una matriz sobre un vector
 def accion(w,v):
     return Produc_Matrix(w,v)
+
+def Produc_Inter(V1,V2):
+    return Produc_Matrix(Adj_Matrix(V1),V2)[0][0]
 
 def Producto_vectores(c1,c2):
     vec = 0
@@ -151,3 +154,55 @@ def hermitiana(c1):
     return False
 
 
+def ProductTensor(A,B):
+    na = len(A)
+    nb = len(B)
+    nr = nb * na
+    r = [(0,0)] * nr
+    index = 0
+    for j in range(na):
+        for k in range(nb):
+            r[index] = ProduComplex(A[j],B[k])
+            index += 1
+    return r
+
+def TensorMatrices(A, B):
+    m = len(A)
+    n = len(B)
+    size = (len(A)*len(B), len(A[0])*len(B[0]))
+    result = [[(0, 0) for i in range(size[1])] for j in range(size[0])]
+    for j in range(size[0]):
+        for k in range(size[1]):
+            result[j][k] = ProduComplex(A[j//n][k//m], B[j % n][k % m])
+    return result
+
+
+#Función que retorna el módulo al cuadrado de un Vector
+def ModuloVector(vect):
+    nv = len(vect)
+    sqmodule = 0.0
+    for j in range(nv):
+        sqmodule += Module(vect[j][0])
+    return sqmodule
+
+#Función que retorna el módulo de un Vector
+def ModuleVec(vect):
+    return math.sqrt(ModuloVector(vect))
+
+#Función que retorna el módulo al cuadrado de un valor complejo
+def Module(c):
+    return (c[0]**2) + (c[1]**2)
+
+#Función que normaliza un vector
+def normalizar(vect):
+    escalar = 1/math.sqrt(ModuloVector(vect))
+    return MultEscalarMatriz((escalar, 0), vect)
+
+def identidad(mat):
+    result = [[(0,0) for i in range(len(mat[0]))] for j in range(len(mat))]
+    for i in range(len(mat)):
+        for j in range(len(mat[0])):
+            if i == j:
+                result[i][j] = (1,0)
+    return result
+    
